@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #FF6B35;
+  --secondary: #2EC4B6;
+  --accent: #FFBE0B;
+  --dark: #1A1A1A;
+  --light: #FAFAFA;
+  --error: #EF476F;
+  --success: #06D6A0;
+  --purple: #9B5DE5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--light);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Neo-brutalist base styles */
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border: 2px solid var(--dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e55a2b;
+}
+
+/* Animation utilities */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation: slideInFromRight 0.3s ease-out;
+}
