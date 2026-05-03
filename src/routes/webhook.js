@@ -2,14 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 router.all('/vobiz/answer', async (req, res) => {
-  // Handle both GET and POST
   try {
-    const { CallUUID, From, To, RequestUUID } = req.body || req.query;
+    const { CallUUID, From, To, RequestUUID } = req.body || req.query || {};
     
     console.log(`📞 INCOMING CALL: CallUUID=${CallUUID}, From=${From}, To=${To}`);
-    console.log('📥 Method:', req.method, 'Body:', JSON.stringify(req.body || {}));
+    console.log('📥 Method:', req.method);
     
-    // Simple Hindi greeting using Vobiz TTS
     const greeting = "Namaste, main aapko baat kar raha hoon. Kya aap kisi course mein interested hain?";
     
     const vobizXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -28,33 +26,6 @@ router.all('/vobiz/answer', async (req, res) => {
   } catch (error) {
     console.error('❌ Error:', error.message);
     res.type('text/xml').send('<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>');
-  }
-});
-  try {
-    const { CallUUID, From, To, RequestUUID } = req.body;
-    
-    console.log(`📞 INCOMING CALL: CallUUID=${CallUUID}, From=${From}, To=${To}`);
-    console.log('📥 Full body:', JSON.stringify(req.body));
-    
-    // Simple Hindi greeting - Vobiz TTS
-    const greeting = "Namaste, main aapko baat kar raha hoon. Kya aap kisi course mein interested hain?";
-    
-    const vobizXml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Speak language="hi-IN">${greeting}</Speak>
-  <Gather numDigits="1" timeout="10" finishOnKey="#">
-    <Speak language="hi-IN">Press 1 for admission details. Press 2 to speak with advisor.</Speak>
-  </Gather>
-  <Speak language="hi-IN">Thank you. Goodbye.</Speak>
-  <Hangup/>
-</Response>`;
-    
-    console.log('📤 Sending XML to Vobiz:', vobizXml);
-    res.type('text/xml').send(vobizXml);
-    
-  } catch (error) {
-    console.error('❌ Error:', error.message);
-    res.send('<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>');
   }
 });
 
@@ -97,17 +68,17 @@ router.post('/vobiz/dtmf', async (req, res) => {
   }
 });
 
-router.post('/vobiz/machine-detection', async (req, res) => {
+router.post('/vobiz/machine-detection', (req, res) => {
   console.log('🤖 Machine detection event');
   res.send('OK');
 });
 
-router.post('/exotel', async (req, res) => {
+router.post('/exotel', (req, res) => {
   console.log('📞 Exotel webhook');
   res.send('OK');
 });
 
-router.post('/exotel/callback', async (req, res) => {
+router.post('/exotel/callback', (req, res) => {
   console.log('📞 Exotel callback');
   res.send('OK');
 });
