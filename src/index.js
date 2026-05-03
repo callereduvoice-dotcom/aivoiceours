@@ -49,10 +49,20 @@ app.use('/api/logs', logsRoutes);
 // Direct call endpoint for dashboard
 app.post('/api/call', async (req, res) => {
   try {
-    const { phone, lead_name, language } = req.body;
+    let { phone, lead_name, language } = req.body;
     
     if (!phone) {
       return res.status(400).json({ error: 'phone required' });
+    }
+    
+    // Ensure phone has country code
+    phone = phone.replace(/\s/g, '');
+    if (!phone.startsWith('+')) {
+      if (phone.startsWith('91') && phone.length === 12) {
+        phone = '+' + phone;
+      } else if (phone.length === 10) {
+        phone = '+91' + phone;
+      }
     }
     
     console.log(`📞 API Call: ${phone}, lang: ${language}`);
