@@ -18,23 +18,20 @@ class TelephonyService {
   }
 
   async makeCall(to, answerUrl, machineDetection = true) {
-    // Ensure phone has country code
-    if (!to.startsWith('+')) {
-      if (to.startsWith('91') && to.length >= 11) {
-        to = '+' + to;
-      } else if (to.length === 10) {
-        to = '+91' + to;
-      }
-    }
+    // Store original for logging
+    const originalTo = to;
     
-    console.log(`📞 Initiating call from ${this.fromNumber} to ${to}`);
+    // Format for Vobiz - they might need 10 digit number without +
+    let vobizTo = to.replace('+91', '');
+    
+    console.log(`📞 Initiating call from ${this.fromNumber} to ${vobizTo} (original: ${originalTo})`);
     
     try {
       const response = await axios.post(
         `${this.baseUrl}/Account/${this.authId}/Call/`,
         {
           from: this.fromNumber,
-          to: to,
+          to: vobizTo,
           answer_url: answerUrl,
           answer_method: 'POST',
           ring_timeout: '30',
