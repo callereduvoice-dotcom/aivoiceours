@@ -1,0 +1,26 @@
+{
+  "name": "ai-voice-agent",
+  "version": "1.0.0",
+  "description": "Custom AI Voice Agent for Education Lead Qualification",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node src/test.js"
+  },
+  "keywords": ["ai", "voice-agent", "lead-qualification", "education"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.16.0",
+    "dotenv": "^16.4.1",
+    "googleapis": "^131.0.0",
+    "openai": "^4.28.0",
+    "axios": "^1.6.7",
+    "uuid": "^9.0.1",
+    "pg": "^8.11.3",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  }
+}
