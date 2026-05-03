@@ -1,7 +1,35 @@
 const express = require('express');
 const router = express.Router();
 
-router.post('/vobiz/answer', async (req, res) => {
+router.all('/vobiz/answer', async (req, res) => {
+  // Handle both GET and POST
+  try {
+    const { CallUUID, From, To, RequestUUID } = req.body || req.query;
+    
+    console.log(`📞 INCOMING CALL: CallUUID=${CallUUID}, From=${From}, To=${To}`);
+    console.log('📥 Method:', req.method, 'Body:', JSON.stringify(req.body || {}));
+    
+    // Simple Hindi greeting using Vobiz TTS
+    const greeting = "Namaste, main aapko baat kar raha hoon. Kya aap kisi course mein interested hain?";
+    
+    const vobizXml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Speak language="hi-IN">${greeting}</Speak>
+  <Gather numDigits="1" timeout="15" finishOnKey="#">
+    <Speak language="hi-IN">Press 1 for admission details. Press 2 to speak with advisor.</Speak>
+  </Gather>
+  <Speak language="hi-IN">Thank you. Goodbye.</Speak>
+  <Hangup/>
+</Response>`;
+    
+    console.log('📤 Sending XML to Vobiz');
+    res.type('text/xml').send(vobizXml);
+    
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+    res.type('text/xml').send('<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>');
+  }
+});
   try {
     const { CallUUID, From, To, RequestUUID } = req.body;
     
