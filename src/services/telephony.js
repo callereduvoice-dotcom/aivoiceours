@@ -18,6 +18,15 @@ class TelephonyService {
   }
 
   async makeCall(to, answerUrl, machineDetection = true) {
+    // Ensure phone has country code
+    if (!to.startsWith('+')) {
+      if (to.startsWith('91') && to.length >= 11) {
+        to = '+' + to;
+      } else if (to.length === 10) {
+        to = '+91' + to;
+      }
+    }
+    
     console.log(`📞 Initiating call from ${this.fromNumber} to ${to}`);
     
     try {

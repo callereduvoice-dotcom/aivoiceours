@@ -55,17 +55,21 @@ app.post('/api/call', async (req, res) => {
       return res.status(400).json({ error: 'phone required' });
     }
     
-    // Ensure phone has country code
-    phone = phone.replace(/\s/g, '');
+    // Clean and format phone number - AGGRESSIVE FIX
+    phone = String(phone).replace(/\s/g, '').replace(/-/g, '');
+    
+    // Add +91 if missing (India)
     if (!phone.startsWith('+')) {
-      if (phone.startsWith('91') && phone.length === 12) {
+      if (phone.startsWith('91') && phone.length >= 11) {
         phone = '+' + phone;
       } else if (phone.length === 10) {
         phone = '+91' + phone;
+      } else if (phone.length === 11 && phone.startsWith('0')) {
+        phone = '+91' + phone.substring(1);
       }
     }
     
-    console.log(`📞 API Call: ${phone}, lang: ${language}`);
+    console.log(`📞 Formatted phone: ${phone}, lang: ${language}`);
     
     const dialerService = require('./services/dialer');
     const telephonyService = require('./services/telephony');
