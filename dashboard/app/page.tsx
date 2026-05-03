@@ -178,8 +178,13 @@ function LogsTab({ apiBase }: { apiBase: string }) {
 
   useEffect(() => {
     fetchLogs();
-    const interval = autoRefresh ? setInterval(fetchLogs, 3000) : null;
-    return () => interval && clearInterval(interval);
+    let interval: NodeJS.Timeout | undefined;
+    if (autoRefresh) {
+      interval = setInterval(fetchLogs, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [autoRefresh]);
 
   async function fetchLogs() {
