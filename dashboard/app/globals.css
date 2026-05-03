@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --primary: #FF6B35;
@@ -20,12 +22,10 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Neo-brutalist base styles */
 input, select, textarea, button {
   font-family: inherit;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 12px;
 }
@@ -43,7 +43,6 @@ input, select, textarea, button {
   background: #e55a2b;
 }
 
-/* Animation utilities */
 @keyframes slideInFromRight {
   from {
     transform: translateX(100%);
