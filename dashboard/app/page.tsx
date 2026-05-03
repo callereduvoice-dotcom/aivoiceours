@@ -169,11 +169,134 @@ function Select({ label, options, value, onChange }: any) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// LOGS TAB COMPONENT
+// ─────────────────────────────────────────────────────────────
+function LogsTab({ apiBase }: { apiBase: string }) {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  useEffect(() => {
+    fetchLogs();
+    const interval = autoRefresh ? setInterval(fetchLogs, 3000) : null;
+    return () => interval && clearInterval(interval);
+  }, [autoRefresh]);
+
+  async function fetchLogs() {
+    try {
+      const res = await fetch(`${apiBase}/api/logs?limit=50`);
+      const data = await res.json();
+      setLogs(data.logs || []);
+    } catch (err) {
+      console.error('Failed to fetch logs:', err);
+    }
+  }
+
+  async function clearLogs() {
+    try {
+      await fetch(`${apiBase}/api/logs`, { method: 'DELETE' });
+      setLogs([]);
+    } catch (err) {
+      console.error('Failed to clear logs:', err);
+    }
+  }
+
+  function getLevelColor(level: string) {
+    switch (level) {
+      case 'error': return 'bg-red-500 text-white';
+      case 'warn': return 'bg-yellow-500 text-black';
+      case 'success': return 'bg-green-500 text-white';
+      default: return 'bg-gray-200 text-black';
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-4xl font-black mb-2">LIVE LOGS</h2>
+          <p className="font-bold text-gray-600">Real-time system activity</p>
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`flex items-center gap-2 px-4 py-2 font-bold border-4 border-black ${
+              autoRefresh ? 'bg-green-400' : 'bg-gray-200'
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            {autoRefresh ? 'AUTO REFRESH ON' : 'AUTO REFRESH OFF'}
+          </button>
+          <button
+            onClick={fetchLogs}
+            className="flex items-center gap-2 px-4 py-2 font-bold border-4 border-black bg-white hover:bg-gray-100"
+          >
+            <Loader2 className="w-4 h-4" />
+            REFRESH
+          </button>
+          <button
+            onClick={clearLogs}
+            className="flex items-center gap-2 px-4 py-2 font-bold border-4 border-black bg-red-400 hover:bg-red-500 text-white"
+          >
+            <X className="w-4 h-4" />
+            CLEAR
+          </button>
+        </div>
+      </div>
+
+      {/* LOGS CONSOLE */}
+      <div className="bg-black border-4 border-black">
+        <div className="grid grid-cols-12 border-b-2 border-gray-800 bg-gray-900 text-gray-400 font-bold p-3 text-sm">
+          <div className="col-span-2">TIME</div>
+          <div className="col-span-1">LEVEL</div>
+          <div className="col-span-2">SOURCE</div>
+          <div className="col-span-7">MESSAGE</div>
+        </div>
+        
+        <div className="max-h-[600px] overflow-y-auto font-mono text-sm">
+          {logs.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              <Activity className="w-12 h-12 mx-auto mb-4" />
+              <p>No logs yet. Make a call to see activity.</p>
+            </div>
+          ) : (
+            logs.map((log: any, idx: number) => (
+              <div 
+                key={log.id || idx} 
+                className={`grid grid-cols-12 border-b border-gray-800 p-3 ${
+                  idx % 2 === 0 ? 'bg-gray-900' : 'bg-black'
+                }`}
+              >
+                <div className="col-span-2 text-gray-500">
+                  {new Date(log.timestamp).toLocaleTimeString()}
+                </div>
+                <div className="col-span-1">
+                  <span className={`px-2 py-0.5 text-xs font-bold ${getLevelColor(log.level)}`}>
+                    {log.level?.toUpperCase() || 'INFO'}
+                  </span>
+                </div>
+                <div className="col-span-2 text-purple-400">
+                  {log.source || 'system'}
+                </div>
+                <div className="col-span-7 text-gray-300">
+                  {log.message}
+                  {log.details && <span className="text-gray-500 ml-2">{log.details}</span>}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'campaigns' | 'test'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'campaigns' | 'test' | 'logs'>('dashboard');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [stats, setStats] = useState<Stats>({ totalCalls: 0, successRate: 0, avgDuration: 0, activeCampaigns: 0 });
   const [loading, setLoading] = useState(false);
@@ -302,6 +425,7 @@ export default function Dashboard() {
               { id: 'leads', label: 'Leads', icon: Users },
               { id: 'campaigns', label: 'Campaigns', icon: Send },
               { id: 'test', label: 'Test Call', icon: Phone },
+              { id: 'logs', label: 'Live Logs', icon: Activity },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -626,6 +750,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* LOGS TAB */}
+        {activeTab === 'logs' && (
+          <LogsTab apiBase={API_BASE} />
         )}
 
       </main>

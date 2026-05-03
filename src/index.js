@@ -37,12 +37,14 @@ const leadsRoutes = require('./routes/leads');
 const statsRoutes = require('./routes/stats');
 const testRoutes = require('./routes/test');
 const webhookRoutes = require('./routes/webhook');
+const logsRoutes = require('./routes/logs').router;
 
 app.use('/api/campaign', campaignRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/webhook', webhookRoutes);
+app.use('/api/logs', logsRoutes);
 
 // Direct call endpoint for dashboard
 app.post('/api/call', async (req, res) => {
@@ -53,15 +55,33 @@ app.post('/api/call', async (req, res) => {
       return res.status(400).json({ error: 'phone required' });
     }
     
-    console.log(`📞 API Call: ${phone}`);
+    console.log(`📞 API Call: ${phone}, lang: ${language}`);
     
     const dialerService = require('./services/dialer');
-    const result = await dialerService.makeCall(phone, language || 'hi-IN');
+    const telephonyService = require('./services/telephony');
+    
+    // Log the attempt
+    console.log(`🔄 Calling Vobiz API...`);
+    
+    const answerUrl = `${process.env.CALLBACK_URL || 'http://localhost:3000'}/api/webhook/vobiz/answer`;
+    const result = await telephonyService.makeCall(phone, answerUrl, true);
+    
+    console.log(`📊 Vobiz response:`, result);
     
     if (result.success) {
-      res.json({ status: 'dispatched', phone, room: result.callId });
+      console.log(`✅ Call dispatched: ${result.callSid}`);
+      res.json({ 
+        status: 'dispatched', 
+        phone, 
+        callSid: result.callSid,
+        message: 'Call initiated successfully'
+      });
     } else {
-      res.status(500).json({ error: result.error || 'Call failed' });
+      console.log(`❌ Call failed:`, result.error);
+      res.status(500).json({ 
+        error: result.error || 'Call failed',
+        details: 'Check Vobiz API credentials and balance'
+      });
     }
   } catch (error) {
     console.error('Call error:', error);
