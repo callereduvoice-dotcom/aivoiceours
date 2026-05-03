@@ -50,4 +50,50 @@ router.post('/stop', (req, res) => {
   res.json({ message: 'Campaign stop not fully implemented yet' });
 });
 
+// Simple call endpoint
+router.post('/call', async (req, res) => {
+  try {
+    const { phone, lead_name, language } = req.body;
+    
+    if (!phone) {
+      return res.status(400).json({ error: 'phone required' });
+    }
+    
+    const dialerService = require('../services/dialer');
+    const result = await dialerService.makeCall(phone, language || 'hi-IN');
+    
+    if (result.success) {
+      res.json({ status: 'dispatched', phone, room: result.callId });
+    } else {
+      res.status(500).json({ error: result.error || 'Call failed' });
+    }
+  } catch (error) {
+    console.error('Call error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Dispatch endpoint for dashboard
+router.post('/dispatch', async (req, res) => {
+  try {
+    const { phoneNumber, leadName, language } = req.body;
+    
+    if (!phoneNumber) {
+      return res.status(400).json({ error: 'phoneNumber required' });
+    }
+    
+    const dialerService = require('../services/dialer');
+    const result = await dialerService.makeCall(phoneNumber, language || 'hi-IN');
+    
+    if (result.success) {
+      res.json({ status: 'dispatched', phone: phoneNumber, room: result.callId });
+    } else {
+      res.status(500).json({ error: result.error || 'Dispatch failed' });
+    }
+  } catch (error) {
+    console.error('Dispatch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
