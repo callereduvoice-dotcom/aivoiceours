@@ -15,6 +15,32 @@ class OutboundDialer {
     return `${this.callbackBase}/api/webhook/vobiz/answer`;
   }
 
+  async makeCall(phone, language = 'hi-IN') {
+    console.log(`📞 Direct call to ${phone}`);
+    
+    const leadData = {
+      phone,
+      name: 'Direct Call',
+      course: 'N/A'
+    };
+    
+    const callId = uuidv4();
+    const result = await telephonyService.makeCall(phone, this.answerUrl, true);
+    
+    if (result.success) {
+      this.activeCalls.set(callId, {
+        callSid: result.callSid,
+        leadData,
+        startTime: Date.now(),
+        status: 'initiated'
+      });
+      
+      return { success: true, callId, callSid: result.callSid };
+    }
+    
+    return { success: false, error: result.error };
+  }
+
   async startCampaign(leadCount = 10) {
     console.log(`🚀 Starting campaign for ${leadCount} leads...`);
     
