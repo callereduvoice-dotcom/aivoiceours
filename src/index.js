@@ -44,6 +44,31 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/webhook', webhookRoutes);
 
+// Direct call endpoint for dashboard
+app.post('/api/call', async (req, res) => {
+  try {
+    const { phone, lead_name, language } = req.body;
+    
+    if (!phone) {
+      return res.status(400).json({ error: 'phone required' });
+    }
+    
+    console.log(`📞 API Call: ${phone}`);
+    
+    const dialerService = require('./services/dialer');
+    const result = await dialerService.makeCall(phone, language || 'hi-IN');
+    
+    if (result.success) {
+      res.json({ status: 'dispatched', phone, room: result.callId });
+    } else {
+      res.status(500).json({ error: result.error || 'Call failed' });
+    }
+  } catch (error) {
+    console.error('Call error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.message);
   res.status(500).json({ error: 'Internal server error', message: err.message });

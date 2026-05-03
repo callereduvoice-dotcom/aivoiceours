@@ -50,8 +50,33 @@ router.post('/stop', (req, res) => {
   res.json({ message: 'Campaign stop not fully implemented yet' });
 });
 
-// Simple call endpoint
+// Simple call endpoint - for dashboard
 router.post('/call', async (req, res) => {
+  try {
+    const { phone, lead_name, language } = req.body;
+    
+    if (!phone) {
+      return res.status(400).json({ error: 'phone required' });
+    }
+    
+    console.log(`📞 Call request: ${phone}, name: ${lead_name}, lang: ${language}`);
+    
+    const dialerService = require('../services/dialer');
+    const result = await dialerService.makeCall(phone, language || 'hi-IN');
+    
+    if (result.success) {
+      res.json({ status: 'dispatched', phone, room: result.callId });
+    } else {
+      res.status(500).json({ error: result.error || 'Call failed' });
+    }
+  } catch (error) {
+    console.error('Call error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Keep this too for /api/campaign/call
+router.post('/call-old', async (req, res) => {
   try {
     const { phone, lead_name, language } = req.body;
     
