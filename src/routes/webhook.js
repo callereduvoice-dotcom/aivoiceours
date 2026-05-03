@@ -6,21 +6,23 @@ router.post('/vobiz/answer', async (req, res) => {
     const { CallUUID, From, To, RequestUUID } = req.body;
     
     console.log(`📞 INCOMING CALL: CallUUID=${CallUUID}, From=${From}, To=${To}`);
+    console.log('📥 Full body:', JSON.stringify(req.body));
     
-    // Simple Hindi greeting - no external services needed
-    const greeting = "Namaste, main Edufast se bol raha hoon. Kya aap kisi course mein interested hain?";
+    // Simple Hindi greeting - Vobiz TTS
+    const greeting = "Namaste, main aapko baat kar raha hoon. Kya aap kisi course mein interested hain?";
     
     const vobizXml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Speak voice="WOMAN" language="hi-IN">${greeting}</Speak>
-  <Gather numDigits="1" timeout="15" finishOnKey="#">
-    <Speak voice="WOMAN" language="hi-IN">Press 1 for admission details. Press 2 to speak with advisor. Press 3 to end call.</Speak>
+  <Speak language="hi-IN">${greeting}</Speak>
+  <Gather numDigits="1" timeout="10" finishOnKey="#">
+    <Speak language="hi-IN">Press 1 for admission details. Press 2 to speak with advisor.</Speak>
   </Gather>
+  <Speak language="hi-IN">Thank you. Goodbye.</Speak>
   <Hangup/>
 </Response>`;
     
-    console.log('📤 Sending response to Vobiz...');
-    res.send(vobizXml);
+    console.log('📤 Sending XML to Vobiz:', vobizXml);
+    res.type('text/xml').send(vobizXml);
     
   } catch (error) {
     console.error('❌ Error:', error.message);
@@ -80,6 +82,18 @@ router.post('/exotel', async (req, res) => {
 router.post('/exotel/callback', async (req, res) => {
   console.log('📞 Exotel callback');
   res.send('OK');
+});
+
+router.get('/test', (req, res) => {
+  const testXml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Speak language="hi-IN">Namaste, ye test call hai. Press 1 to continue.</Speak>
+  <Gather numDigits="1" timeout="10" finishOnKey="#">
+    <Speak language="hi-IN">Press 1 for details.</Speak>
+  </Gather>
+  <Hangup/>
+</Response>`;
+  res.type('text/xml').send(testXml);
 });
 
 module.exports = router;
