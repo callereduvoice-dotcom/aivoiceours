@@ -46,7 +46,7 @@ app.use('/api/test', testRoutes);
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/logs', logsRoutes);
 
-// Direct call endpoint - uses LiveKit if configured, otherwise Vobiz
+// Direct call endpoint - ALWAYS use Vobiz (LiveKit has auth issues)
 app.post('/api/call', async (req, res) => {
   try {
     let { phone, lead_name, language } = req.body;
@@ -69,62 +69,25 @@ app.post('/api/call', async (req, res) => {
       }
     }
     
-    // Check if LiveKit is configured
-    const livekitUrl = process.env.LIVEKIT_URL;
-    const livekitKey = process.env.LIVEKIT_API_KEY;
-    const livekitSecret = process.env.LIVEKIT_API_SECRET;
+    // ALWAYS use Vobiz for now
+    console.log(`📞 Using Vobiz for call to ${phone}`);
     
-    if (livekitUrl && livekitKey && livekitSecret) {
-      // Use LiveKit
-      console.log(`🚀 Using LiveKit for call to ${phone}`);
-      
-      const { v4: uuidv4 } = require('uuid');
-      const callId = uuidv4();
-      const roomName = `call-${phone.replace('+', '')}-${Date.now()}`;
-      
-      const metadata = {
-        phone_number: phone,
-        lead_name: lead_name || 'User',
-        language: language || 'hi-IN'
-      };
-      
-      // Create room and dispatch agent via LiveKit API
-      const lk = require('./services/livekit-client');
-      const result = await lk.dispatchCall(roomName, metadata);
-      
-      if (result.success) {
-        console.log(`✅ LiveKit call dispatched: ${roomName}`);
-        res.json({ 
-          status: 'dispatched', 
-          phone, 
-          room: roomName,
-          type: 'livekit',
-          message: 'AI agent will call you shortly'
-        });
-      } else {
-        throw new Error(result.error);
-      }
+    const telephonyService = require('./services/telephony');
+    const answerUrl = `${process.env.CALLBACK_URL || 'http://localhost:3000'}/api/webhook/vobiz/answer`;
+    const result = await telephonyService.makeCall(phone, answerUrl, false);
+    
+    if (result.success) {
+      res.json({ 
+        status: 'dispatched', 
+        phone, 
+        callSid: result.callSid,
+        type: 'vobiz',
+        message: 'Call initiated - check your phone!'
+      });
     } else {
-      // Fallback to Vobiz direct
-      console.log(`📞 Using Vobiz for call to ${phone}`);
-      
-      const telephonyService = require('./services/telephony');
-      const answerUrl = `${process.env.CALLBACK_URL || 'http://localhost:3000'}/api/webhook/vobiz/answer`;
-      const result = await telephonyService.makeCall(phone, answerUrl, false);
-      
-      if (result.success) {
-        res.json({ 
-          status: 'dispatched', 
-          phone, 
-          callSid: result.callSid,
-          type: 'vobiz',
-          message: 'Call initiated'
-        });
-      } else {
-        throw new Error(result.error);
-      }
+      throw new Error(result.error);
     }
-} catch (error) {
+  } catch (error) {
     console.error('Call error:', error);
     res.status(500).json({ error: error.message });
   }
