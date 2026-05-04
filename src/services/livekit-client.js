@@ -15,9 +15,9 @@ class LiveKitClient {
   }
   
   getAuthHeader() {
-    const auth = Buffer.from(`${this.key}:${this.secret}`).toString('base64');
+    // LiveKit uses Bearer with api_key
     return {
-      'Authorization': `Basic ${auth}`,
+      'Authorization': `Bearer ${this.key}`,
       'Content-Type': 'application/json'
     };
   }
