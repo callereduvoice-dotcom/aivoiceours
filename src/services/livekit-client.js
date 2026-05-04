@@ -3,9 +3,15 @@ const { v4: uuidv4 } = require('uuid');
 
 class LiveKitClient {
   constructor() {
-    this.url = process.env.LIVEKIT_URL;
+    // Convert wss:// to https:// for API calls
+    let url = process.env.LIVEKIT_URL || '';
+    if (url.startsWith('wss://')) {
+      url = url.replace('wss://', 'https://');
+    }
+    this.url = url;
     this.key = process.env.LIVEKIT_API_KEY;
     this.secret = process.env.LIVEKIT_API_SECRET;
+    console.log(`🔧 LiveKit API URL: ${this.url}`);
   }
   
   getAuthHeader() {
