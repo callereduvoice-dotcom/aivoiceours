@@ -155,7 +155,7 @@ app.post('/api/call', async (req, res) => {
         details: 'Check Vobiz API credentials and balance'
       });
     }
-  } catch (error) {
+} catch (error) {
     console.error('Call error:', error);
     res.status(500).json({ error: error.message });
   }
